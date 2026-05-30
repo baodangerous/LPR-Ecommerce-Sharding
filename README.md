@@ -1,4 +1,4 @@
-# ⚡ LPR — Lightweight Proactive Re-sharding
+# LPR — Lightweight Proactive Re-sharding
 
 <p align="center">
   <img src="docs/assets/architecture.png" alt="LPR Architecture" width="700"/>
@@ -19,7 +19,7 @@
 
 ---
 
-## 🔍 Vấn đề: Flash Sale làm tê liệt database phân tán
+## Vấn đề: Flash Sale làm tê liệt database phân tán
 
 Trong hệ thống thương mại điện tử, một sự kiện Flash Sale có thể biến **top 20% sản phẩm thành 80% request** chỉ trong vài giây. Hiện tượng này — được gọi là **workload skew** theo phân phối Zipf — tạo ra các *hot-spot shard* làm tắc nghẽn toàn hệ thống.
 
@@ -39,7 +39,7 @@ Trên tập dữ liệu thực: IR = 43.12  →  một shard gánh gấp 43 lầ
 
 ---
 
-## 💡 Insight: Phát hiện hotspot *trước khi* nó xảy ra
+## Insight: Phát hiện hotspot *trước khi* nó xảy ra
 
 LPR không chờ tải vượt ngưỡng — nó theo dõi **tốc độ tăng trưởng tải** và đưa ra quyết định di trú *chủ động*.
 
@@ -57,7 +57,7 @@ Expected Benefit > 1.2 × Migration Cost
 
 ---
 
-## 🏗️ Kiến trúc hệ thống
+##  Kiến trúc hệ thống
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -72,7 +72,7 @@ Expected Benefit > 1.2 × Migration Cost
 │       │                                         │  │
 │       ▼                                         │  │
 │  ┌────┬────┬─────────┬────┐                     │  │
-│  │ S₀ │ S₁ │ S₂ 🔥  │ S₃ │  M = 4 shards      │  │
+│  │ S₀ │ S₁ │ S₂   │ S₃ │  M = 4 shards      │  │
 │  └────┴────┴─────────┴────┘                     │  │
 │       │   Lᵢ(t) per cycle                       │  │
 │       ▼                                         │  │
@@ -85,7 +85,7 @@ Expected Benefit > 1.2 × Migration Cost
 
 ---
 
-## 📊 Kết quả thực nghiệm
+## Kết quả thực nghiệm
 
 ### So sánh tổng hợp (50,000 requests, 4 shards)
 
@@ -153,7 +153,7 @@ LPR-Ecommerce-Sharding/
 
 ---
 
-## 🚀 Cách chạy
+## Cách chạy
 
 ### Option 1: Google Colab (khuyến nghị)
 
@@ -216,7 +216,7 @@ print(f'Imbalance:  {result[\"final_imbalance\"]:.2f}')
 
 ---
 
-## 📚 Tài liệu tham khảo
+## Tài liệu tham khảo
 
 ```bibtex
 @article{lpr2025,
@@ -230,7 +230,7 @@ print(f'Imbalance:  {result[\"final_imbalance\"]:.2f}')
 
 ---
 
-## 👥 Tác giả
+## Tác giả
 
 | | Nguyễn Lê Bảo Đăng | Phạm Minh Ngân |
 |---|---|---|
