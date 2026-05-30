@@ -21,6 +21,7 @@
   <strong>Giảm 87% migration overhead · Tăng 30.8% throughput · Giảm 35.6% latency</strong><br/>
   <sub>So với Reactive Re-sharding trên tập dữ liệu Amazon Sale Report (128,975 giao dịch)</sub>
 </p>
+
 ---
 
 ## Abstract / Tóm tắt
