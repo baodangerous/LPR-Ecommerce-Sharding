@@ -3,6 +3,25 @@
 **Cơ chế tái phân mảnh chủ động nhẹ cho hệ cơ sở dữ liệu phân tán trong môi trường tin cậy: Áp dụng trên dữ liệu thương mại điện tử**
 
 ---
+# LPR-Ecommerce-Sharding
+
+<p align="center">
+  <img src="assets/architecture.svg" alt="LPR Architecture" width="100%">
+</p>
+
+<p align="center">
+  <a href="#"><img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/PySpark-3.x-E25A1C?style=flat-square&logo=apachespark&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Platform-Google%20Colab-F9AB00?style=flat-square&logo=googlecolab&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Dataset-Amazon%20Sales-FF9900?style=flat-square&logo=amazon&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=flat-square"/></a>
+</p>
+
+<p align="center">
+  <strong>Giảm 87% migration overhead · Tăng 30.8% throughput · Giảm 35.6% latency</strong><br/>
+  <sub>So với Reactive Re-sharding trên tập dữ liệu Amazon Sale Report (128,975 giao dịch)</sub>
+</p>
+---
 
 ## Abstract / Tóm tắt
 
@@ -52,36 +71,6 @@ Hᵢ(t) = EMAᵢ(t) + β·GRᵢ(t)    (β = 0.5)
 # Chỉ migrate khi có lợi:
 Expected Benefit > 1.2 × Migration Cost
 ```
-
----
-
-## System Architecture / Kiến trúc hệ thống
-
-```
-┌─────────────────────────────────────────────────────┐
-│              Trusted Distributed Environment        │
-│                                                     │
-│  Workload Generator                                 │
-│  [Uniform] [Zipfian s=2.0] [Flash-sale burst=40%]  │
-│       │                                             │
-│       ▼                                             │
-│  Request Router  ←──── key_to_shard_map ────────┐  │
-│  (Consistent Hashing)                           │  │
-│       │                                         │  │
-│       ▼                                         │  │
-│  ┌────┬────┬─────────┬────┐                     │  │
-│  │ S₀ │ S₁ │ S₂   │ S₃ │  M = 4 shards      │  │
-│  └────┴────┴─────────┴────┘                     │  │
-│       │   Lᵢ(t) per cycle                       │  │
-│       ▼                                         │  │
-│  ┌──────────── LPR Controller ──────────────┐   │  │
-│  │ EMA filter → Growth Rate → Hotspot Score │   │  │
-│  │ → Adaptive Threshold → Cost-Benefit gate ├───┘  │
-│  └───────────────────────────────────────────┘      │
-└─────────────────────────────────────────────────────┘
-```
-
----
 
 ---
 
@@ -215,8 +204,8 @@ LPR-Ecommerce-Sharding/
 │   └── simulation.py               run_simulation() evaluation pipeline
 ├── visualization/
 │   └── plot_results.py             Publication-quality plotting utilities
-├── paper/
-│   └── LPR_paper.pdf               Full research paper (IEEE format)
+├── docs/
+│   └── LPR_report.pdf               Full research document
 └── requirements.txt
 ```
 
@@ -282,4 +271,4 @@ print(f"Imbalance  : {result['final_imbalance']:.2f}")
 
 **Nguyen Le Bao Dang** (MSSV: 23520230) and **Pham Minh Ngan** (MSSV: 23520997)  
 Faculty of Information Systems, University of Information Technology — VNU-HCM  
-Coursework: Big Data & Distributed Databases, 2025
+Coursework: Big Data & Distributed Databases, 2026
