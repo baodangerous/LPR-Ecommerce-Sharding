@@ -1,4 +1,4 @@
-# LPR — Lightweight Proactive Re-sharding
+<h1 align="center">LPR — Lightweight Proactive Re-sharding</h1>
 
 <p align="center">
   <img src="assets/architecture.svg" alt="LPR System Architecture" width="100%">
@@ -20,7 +20,7 @@
 
 <p align="center">
   <strong>Proactive hotspot detection for trusted distributed databases</strong><br/>
-  <sub>University of Information Technology · VNU-HCM · Big Data & Distributed Systems · 2025–2026</sub>
+  <sub>University of Information Technology · VNU-HCM · Big Data & Distributed Systems · 2026</sub>
 </p>
 
 ---
