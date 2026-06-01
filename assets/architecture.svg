@@ -45,7 +45,7 @@
       font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#993C1D">40 % burst</text>
 
 <!-- tier label centred below boxes -->
-<text x="340" y="106" text-anchor="middle"
+<text x="344" y="106" text-anchor="middle"
       font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#888780">Workload generators</text>
 
 <!-- T1 → convergence bus → router -->
