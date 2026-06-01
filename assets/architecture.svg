@@ -1,125 +1,176 @@
-<svg width="100%" viewBox="0 0 680 520" role="img" style="" xmlns="http://www.w3.org/2000/svg">
-  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">LPR System Architecture</title>
-  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Lightweight Proactive Re-sharding architecture showing pipeline from workload ingestion through hotspot detection to migration decision</desc>
- <defs>
-  <marker id="arrow"
-          viewBox="0 0 10 10"
-          refX="9"
-          refY="5"
-          markerWidth="8"
-          markerHeight="8"
-          orient="auto">
-    <path d="M0 0 L10 5 L0 10 Z"
-          fill="#9C9A92"/>
+<svg width="680" height="600" viewBox="0 0 680 600"
+     xmlns="http://www.w3.org/2000/svg" role="img">
+<title>LPR — Lightweight Proactive Re-sharding: system architecture</title>
+<desc>Five-tier pipeline: workload generators, request router, shard cluster, LPR controller, migration feedback.</desc>
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
   </marker>
-
-  <marker id="arrow-orange"
-          viewBox="0 0 10 10"
-          refX="9"
-          refY="5"
-          markerWidth="8"
-          markerHeight="8"
-          orient="auto">
-    <path d="M0 0 L10 5 L0 10 Z"
-          fill="#BA7517"/>
+  <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
   </marker>
 </defs>
-  <!-- ── OUTER: Trusted distributed env ── -->
-  <rect x="20" y="14" width="640" height="486" rx="16" fill="none" stroke="var(--color-border-secondary)" stroke-width="1" stroke-dasharray="6 4" style="fill:none;stroke:rgba(222, 220, 209, 0.3);color:rgb(255, 255, 255);stroke-width:1px;stroke-dasharray:6px, 4px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  <text x="36" y="34" style="fill:var(--color-text-secondary);fill:rgb(194, 192, 182);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">Trusted distributed environment</text>
-  <!-- ── WORKLOAD GENERATOR (top row) ── -->
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="44" y="48" width="120" height="44" rx="8" stroke-width="0.5" style="fill:rgb(68, 68, 65);stroke:rgb(180, 178, 169);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="104" y="66" text-anchor="middle" dominant-baseline="central" style="fill:rgb(211, 209, 199);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Uniform</text>
-    <text x="104" y="82" text-anchor="middle" dominant-baseline="central" style="fill:rgb(180, 178, 169);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">baseline</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="180" y="48" width="120" height="44" rx="8" stroke-width="0.5" style="fill:rgb(68, 68, 65);stroke:rgb(180, 178, 169);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="240" y="66" text-anchor="middle" dominant-baseline="central" style="fill:rgb(211, 209, 199);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Zipfian</text>
-    <text x="240" y="82" text-anchor="middle" dominant-baseline="central" style="fill:rgb(180, 178, 169);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">skewed load</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="316" y="48" width="120" height="44" rx="8" stroke-width="0.5" style="fill:rgb(113, 43, 19);stroke:rgb(240, 153, 123);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="376" y="66" text-anchor="middle" dominant-baseline="central" style="fill:rgb(245, 196, 179);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Flash-sale</text>
-    <text x="376" y="82" text-anchor="middle" dominant-baseline="central" style="fill:rgb(240, 153, 123);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">burst traffic</text>
-  </g>
-  <text x="480" y="72" style="fill:var(--color-text-tertiary);fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">Workload</text>
-  <text x="480" y="86" style="fill:var(--color-text-tertiary);fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">generator</text>
-  
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="118" y="154" width="244" height="48" rx="8" stroke-width="0.5" style="fill:rgb(60, 52, 137);stroke:rgb(175, 169, 236);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="240" y="168" text-anchor="middle" dominant-baseline="central" style="fill:rgb(206, 203, 246);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Request router</text>
-    <text x="240" y="186" text-anchor="middle" dominant-baseline="central" style="fill:rgb(175, 169, 236);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">consistent hashing → key_to_shard_map</text>
-  </g>
-  <!-- arrow router → shards -->
-  <line x1="240" y1="204" x2="240" y2="236" marker-end="url(#arrow)" stroke="var(--color-border-secondary)" style="fill:none;stroke:rgb(156, 154, 146);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  <!-- ── SHARD CLUSTER ── -->
-  <rect x="60" y="236" width="360" height="72" rx="12" fill="none" stroke="var(--color-border-tertiary)" stroke-width="1" stroke-dasharray="4 3" style="fill:none;stroke:rgba(222, 220, 209, 0.15);color:rgb(255, 255, 255);stroke-width:1px;stroke-dasharray:4px, 3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  <text x="78" y="253" style="fill:var(--color-text-tertiary);fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">Shard cluster  (M=4)</text>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="76" y="258" width="68" height="36" rx="6" stroke-width="0.5" style="fill:rgb(8, 80, 65);stroke:rgb(93, 202, 165);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="110" y="277" text-anchor="middle" dominant-baseline="central" style="fill:rgb(159, 225, 203);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">S₀</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="160" y="258" width="68" height="36" rx="6" stroke-width="0.5" style="fill:rgb(8, 80, 65);stroke:rgb(93, 202, 165);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="194" y="277" text-anchor="middle" dominant-baseline="central" style="fill:rgb(159, 225, 203);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">S₁</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="244" y="258" width="68" height="36" rx="6" stroke-width="0.5" style="fill:rgb(113, 43, 19);stroke:rgb(240, 153, 123);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="278" y="277" text-anchor="middle" dominant-baseline="central" style="fill:rgb(245, 196, 179);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">S₂ </text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="328" y="258" width="68" height="36" rx="6" stroke-width="0.5" style="fill:rgb(8, 80, 65);stroke:rgb(93, 202, 165);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="362" y="277" text-anchor="middle" dominant-baseline="central" style="fill:rgb(159, 225, 203);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">S₃</text>
-  </g>
-  <!-- Lᵢ(t) label -->
-  <text x="240" y="326" text-anchor="middle" style="fill:var(--color-text-tertiary);fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:auto">Lᵢ(t) per cycle</text>
-  <!-- arrow shards → LPR controller -->
-  <line x1="240" y1="334" x2="240" y2="368" marker-end="url(#arrow)" stroke="var(--color-border-secondary)" style="fill:none;stroke:rgb(156, 154, 146);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  <!-- ── LPR CONTROLLER ── -->
-  <rect x="44" y="368" width="596" height="106" rx="12" fill="none" stroke="var(--color-border-secondary)" stroke-width="1" style="fill:none;stroke:rgba(222, 220, 209, 0.3);color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  <text x="60" y="386" style="fill:var(--color-text-secondary);fill:rgb(194, 192, 182);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">LPR controller</text>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="58" y="394" width="108" height="64" rx="8" stroke-width="0.5" style="fill:rgb(12, 68, 124);stroke:rgb(133, 183, 235);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="112" y="414" text-anchor="middle" dominant-baseline="central" style="fill:rgb(181, 212, 244);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">EMA filter</text>
-    <text x="112" y="430" text-anchor="middle" dominant-baseline="central" style="fill:rgb(133, 183, 235);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">α=0.3</text>
-    <text x="112" y="446" text-anchor="middle" dominant-baseline="central" style="fill:rgb(133, 183, 235);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">noise reduction</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="182" y="394" width="120" height="64" rx="8" stroke-width="0.5" style="fill:rgb(12, 68, 124);stroke:rgb(133, 183, 235);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="242" y="414" text-anchor="middle" dominant-baseline="central" style="fill:rgb(181, 212, 244);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Growth rate</text>
-    <text x="242" y="430" text-anchor="middle" dominant-baseline="central" style="fill:rgb(133, 183, 235);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">GRᵢ(t)</text>
-    <text x="242" y="446" text-anchor="middle" dominant-baseline="central" style="fill:rgb(133, 183, 235);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">early detection</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="318" y="394" width="122" height="64" rx="8" stroke-width="0.5" style="fill:rgb(60, 52, 137);stroke:rgb(175, 169, 236);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="379" y="414" text-anchor="middle" dominant-baseline="central" style="fill:rgb(206, 203, 246);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Hotspot score</text>
-    <text x="379" y="430" text-anchor="middle" dominant-baseline="central" style="fill:rgb(175, 169, 236);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">Hᵢ = EMA + β·GR</text>
-    <text x="379" y="446" text-anchor="middle" dominant-baseline="central" style="fill:rgb(175, 169, 236);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">adaptive threshold</text>
-  </g>
-  <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <rect x="456" y="394" width="120" height="64" rx="8" stroke-width="0.5" style="fill:rgb(99, 56, 6);stroke:rgb(239, 159, 39);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <text x="516" y="414" text-anchor="middle" dominant-baseline="central" style="fill:rgb(250, 199, 117);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:14px;font-weight:500;text-anchor:middle;dominant-baseline:central">Cost-benefit</text>
-    <text x="516" y="430" text-anchor="middle" dominant-baseline="central" style="fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">benefit &gt; 1.2×cost</text>
-    <text x="516" y="446" text-anchor="middle" dominant-baseline="central" style="fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">anti-thrashing</text>
-  </g>
-  <!-- arrows between LPR components -->
-<line x1="104" y1="92" x2="180" y2="154"
-      stroke="#9C9A92"
-      stroke-width="1.5"
-      marker-end="url(#arrow)"/>
 
-<line x1="240" y1="92" x2="240" y2="154"
-      stroke="#9C9A92"
-      stroke-width="1.5"
-      marker-end="url(#arrow)"/>
 
-<line x1="376" y1="92" x2="300" y2="154"
-      stroke="#9C9A92"
-      stroke-width="1.5"
-      marker-end="url(#arrow)"/>
-  <!-- feedback arrow: LPR → router (migration) -->
-  <path d="M576 394 Q606 330 480 294" fill="none" stroke="#BA7517" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#arrow)" style="fill:none;stroke:rgb(186, 117, 23);color:rgb(255, 255, 255);stroke-width:1.2px;stroke-dasharray:5px, 3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  <text x="59" y="350" style="fill:#BA7517;fill:rgb(186, 117, 23);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">migrate</text>
-  <text x="590" y="364" style="fill:#BA7517;fill:rgb(186, 117, 23);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">top-K keys</text>
+
+<!-- outer frame -->
+<rect x="16" y="10" width="648" height="578" rx="14" fill="none"
+      stroke="#D3D1C7" stroke-width="1" stroke-dasharray="6 3"/>
+<text x="32" y="27" font-family="ui-sans-serif,system-ui,sans-serif"
+      font-size="12" fill="#888780">Trusted distributed environment</text>
+
+<!-- ── TIER 1: generators  y=44..92 ── -->
+<!-- Uniform -->
+<rect x="90" y="44" width="148" height="48" rx="7"
+      fill="#F1EFE8" stroke="#888780" stroke-width="0.5"/>
+<text x="164" y="64" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#444441">Uniform</text>
+<text x="164" y="80" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A">balanced load</text>
+
+<!-- Zipfian -->
+<rect x="266" y="44" width="148" height="48" rx="7"
+      fill="#F1EFE8" stroke="#888780" stroke-width="0.5"/>
+<text x="340" y="64" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#444441">Zipfian</text>
+<text x="340" y="80" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A">s = 2.0 skew</text>
+
+<!-- Flash-sale -->
+<rect x="442" y="44" width="148" height="48" rx="7"
+      fill="#FAECE7" stroke="#D85A30" stroke-width="0.5"/>
+<text x="516" y="64" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#712B13">Flash-sale</text>
+<text x="516" y="80" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#993C1D">40 % burst</text>
+
+<!-- tier label centred below boxes -->
+<text x="340" y="106" text-anchor="middle"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#888780">Workload generators</text>
+
+<!-- T1 → convergence bus → router -->
+<line x1="164" y1="92" x2="164" y2="120" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="340" y1="92" x2="340" y2="120" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="516" y1="92" x2="516" y2="120" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="164" y1="120" x2="516" y2="120" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="340" y1="120" x2="340" y2="140" stroke="#888780" stroke-width="1.3" marker-end="url(#arr)"/>
+
+<!-- ── TIER 2: router  y=140..194 ── -->
+<rect x="130" y="140" width="420" height="54" rx="8"
+      fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+<text x="340" y="160" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#26215C">Request router</text>
+<text x="340" y="178" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7">Consistent hashing  ·  key_to_shard_map</text>
+
+<!-- T2 → fan-out bus → 4 shards -->
+<line x1="340" y1="194" x2="340" y2="222" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="152" y1="222" x2="528" y2="222" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="152" y1="222" x2="152" y2="250" stroke="#888780" stroke-width="1.3" marker-end="url(#arr)"/>
+<line x1="276" y1="222" x2="276" y2="250" stroke="#888780" stroke-width="1.3" marker-end="url(#arr)"/>
+<line x1="404" y1="222" x2="404" y2="250" stroke="#888780" stroke-width="1.3" marker-end="url(#arr)"/>
+<line x1="528" y1="222" x2="528" y2="250" stroke="#888780" stroke-width="1.3" marker-end="url(#arr)"/>
+
+<!-- ── TIER 3: shard cluster  y=244..332 ── -->
+<rect x="84" y="244" width="512" height="88" rx="10" fill="none"
+      stroke="#B4B2A9" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="100" y="262" font-family="ui-sans-serif,system-ui,sans-serif"
+      font-size="12" fill="#888780">Shard cluster  ·  M = 4</text>
+
+<!-- S0 -->
+<rect x="100" y="268" width="104" height="46" rx="6"
+      fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="152" y="291" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#085041">S&#x2080;</text>
+
+<!-- S1 -->
+<rect x="224" y="268" width="104" height="46" rx="6"
+      fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="276" y="291" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#085041">S&#x2081;</text>
+
+<!-- S2 hot -->
+<rect x="348" y="268" width="108" height="46" rx="6"
+      fill="#FAECE7" stroke="#D85A30" stroke-width="1"/>
+<text x="402" y="283" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#712B13">S&#x2082;</text>
+<text x="402" y="301" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#993C1D">hot-spot</text>
+
+<!-- S3 -->
+<rect x="476" y="268" width="104" height="46" rx="6"
+      fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="528" y="291" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#085041">S&#x2083;</text>
+
+<!-- T3 → collect bus → controller -->
+<line x1="152" y1="314" x2="152" y2="356" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="276" y1="314" x2="276" y2="356" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="402" y1="314" x2="402" y2="356" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="528" y1="314" x2="528" y2="356" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="152" y1="356" x2="528" y2="356" stroke="#B4B2A9" stroke-width="1.3"/>
+<line x1="340" y1="356" x2="340" y2="374" stroke="#888780" stroke-width="1.3" marker-end="url(#arr)"/>
+<text x="350" y="368" font-family="ui-sans-serif,system-ui,sans-serif"
+      font-size="11" fill="#888780">L&#x1D62;(t) per cycle</text>
+
+<!-- ── TIER 4: LPR controller  y=374..510 ── -->
+<rect x="50" y="374" width="580" height="136" rx="12" fill="none"
+      stroke="#B4B2A9" stroke-width="1"/>
+<text x="66" y="390" font-family="ui-sans-serif,system-ui,sans-serif"
+      font-size="12" fill="#5F5E5A">LPR controller  ·  O(k) per cycle  ·  deterministic</text>
+
+<!-- EMA -->
+<rect x="69" y="400" width="122" height="96" rx="7"
+      fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="130" y="422" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#0C447C">EMA filter</text>
+<text x="130" y="442" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5">&#x3B1; = 0.3</text>
+<text x="130" y="460" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5">noise suppression</text>
+
+<!-- Growth rate -->
+<rect x="209" y="400" width="122" height="96" rx="7"
+      fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="270" y="422" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#0C447C">Growth rate</text>
+<text x="270" y="442" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5">GR&#x1D62;(t)</text>
+<text x="270" y="460" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5">early detection</text>
+
+<!-- Hotspot score -->
+<rect x="349" y="400" width="122" height="96" rx="7"
+      fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+<text x="410" y="418" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="500" fill="#26215C">Hotspot score</text>
+<text x="410" y="438" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#534AB7">H&#x1D62; = EMA + &#x3B2;&#xB7;GR</text>
+<text x="410" y="455" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#534AB7">&#x3B2; = 0.5</text>
+<text x="410" y="472" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#534AB7">T = mean&#xB7;&#x3B3;,  &#x3B3;=1.5</text>
+
+<!-- Cost-benefit -->
+<rect x="489" y="400" width="122" height="96" rx="7"
+      fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+<text x="550" y="422" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="500" fill="#633806">Cost-benefit</text>
+<text x="550" y="442" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#854F0B">benefit &gt; 1.2&#xD7;cost</text>
+<text x="550" y="460" text-anchor="middle" dominant-baseline="central"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#854F0B">anti-thrashing</text>
+
+<!-- arrows between components at y=448 -->
+<line x1="191" y1="448" x2="207" y2="448" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="331" y1="448" x2="347" y2="448" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="471" y1="448" x2="487" y2="448" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── FEEDBACK loop ── -->
+<path d="M611 448 L640 448 L640 536 L28 536 L28 167 L130 167"
+      fill="none" stroke="#BA7517"
+      stroke-width="1.4" stroke-dasharray="6 3" marker-end="url(#arr-amber)"/>
+<text x="340" y="528" text-anchor="middle"
+      font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#BA7517">migrate top-10 % hot keys  ·  update key_to_shard_map</text>
+
 </svg>
