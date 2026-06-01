@@ -26,7 +26,7 @@ class ReactiveSharding:
     def __init__(
         self,
         num_shards: int,
-        threshold: int = 200,
+        threshold: int = 150,
         migration_fraction: float = 0.1,
     ):
         self.num_shards = num_shards
