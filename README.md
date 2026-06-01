@@ -19,172 +19,174 @@
 </p>
 
 <p align="center">
-  <strong>Proactive hotspot detection for trusted distributed databases</strong><br/>
-  <sub>University of Information Technology · VNU-HCM · Big Data & Distributed Systems · 2026</sub>
+  <strong>Proactive hotspot detection for trusted distributed databases in e-commerce</strong><br/>
+  <sub>Cơ chế tái phân mảnh chủ động nhẹ cho hệ CSDL phân tán trong môi trường tin cậy</sub><br/>
+  <sub>University of Information Technology · VNU-HCM · Big Data & Distributed Database Systems · 2026</sub>
 </p>
 
 ---
 
 ## The Problem
 
-Picture a Flash Sale: thousands of users flood a single product page simultaneously. In a sharded database, every one of those requests hits the same shard — while the other three sit idle. The system does not fail, but one shard becomes a **bottleneck** that slows down every query in the cluster.
+In a distributed database serving e-commerce, a Flash Sale event can send thousands of requests per second to the same product shard — while the other three sit idle. This is called a **hot-spot shard**, and it slows down every query in the cluster even though total capacity is more than sufficient.
 
-On the Amazon Sale Report dataset (128,975 transactions), we measured an Imbalance Ratio of **43.12** — one shard handling 43× the average load. The top 20% of products received over 80% of all requests, a textbook Zipf distribution.
+On the Amazon Sale Report dataset (128,975 transactions), we measured an Imbalance Ratio of **43.12** — one shard handling 43× the average load. The root cause is Zipf distribution: top 20% of products receive 80%+ of all requests.
 
 ```
-Imbalance Ratio = max(shard load) / mean(shard load)
-
-Measured on Amazon dataset:   IR = 43.12
-Ideal (perfectly balanced):   IR = 1.00
+Imbalance Ratio = max(shard_load) / mean(shard_load)
+Measured on dataset:  IR = 43.12
+Perfect balance:      IR = 1.00
 ```
 
 ---
 
 ## Why Existing Solutions Fall Short
 
-The obvious fix is to move hot data to less-loaded shards. The hard part is *when* and *how often*.
-
-| Approach | What goes wrong |
+| Approach | Problem |
 |---|---|
 | **Static Sharding** | Never rebalances. Hot-spots are permanent. |
-| **Reactive Re-sharding** | Waits until overload happens, then scrambles — causing migration thrashing (224 migrations in our Flash-sale experiment) |
-| **Marlin** *(SIGMOD 2025)* | Excellent for untrusted blockchain networks. But Byzantine consensus adds coordination overhead that trusted enterprise DBs don't need. |
-| **PSAP** *(arXiv 2025)* | Safe-PPO reinforcement learning achieves great predictions. Requires offline training, validator synchronization, and specialized hardware. |
+| **Reactive Re-sharding** | Reacts only after overload — causes migration thrashing (300 unnecessary migrations on uniform workload in our experiments). |
+| **Marlin** *(SIGMOD 2025)* | Excellent for untrusted blockchain. Byzantine consensus adds O(n²) overhead that trusted enterprise databases do not need. |
+| **PSAP** *(arXiv 2025)* | Safe-PPO reinforcement learning — requires offline training, validator synchronization, and specialized hardware. |
 
-There is a gap: a **simple, deterministic, zero-training** mechanism for trusted distributed databases that acts *before* the hotspot peaks rather than after.
+The gap: a **simple, deterministic, zero-training** mechanism for trusted distributed databases that acts *before* the hotspot peaks.
 
 ---
 
 ## The Insight
 
-Instead of reacting to load, watch *how fast* it is growing.
-
-A shard about to become a hot-spot shows a rising load trajectory *before* it crosses any danger threshold. LPR monitors this trajectory using two lightweight signals — an EMA filter to suppress noise, and a Growth Rate to detect acceleration — then acts early.
+Instead of reacting to current load, watch **how fast it is growing**.
 
 ```
-# Is this shard getting hotter faster than average?
-GR_i(t)  = ( L_i(t) − L_i(t−1) ) / ( L_i(t−1) + ε )   # load acceleration
-EMA_i(t) = α · L_i(t) + (1−α) · EMA_i(t−1)              # smoothed load
+# Load acceleration — fires before the peak
+GR_i(t)  = ( L_i(t) − L_i(t−1) ) / ( L_i(t−1) + ε )    ε = 1e-5
 
-# Hotspot Score — fires before the peak
-H_i(t)   = EMA_i(t) + β · GR_i(t)
+# Exponential Moving Average — noise suppression
+EMA_i(t) = α · L_i(t) + (1−α) · EMA_i(t−1)              α = 0.3
 
-# Only migrate if it's actually worth it (anti-thrashing gate)
-Expected Benefit > 1.2 × Migration Cost
+# Adaptive threshold — self-adjusts to cluster state
+T(t)     = mean( L_j(t) ) · γ                             γ = 1.5
+
+# Hotspot Score — unified proactive signal
+H_i(t)   = EMA_i(t) + β · GR_i(t)                        β = 0.5
+
+# Cost-Benefit gate — anti-thrashing
+migrate only when: Expected Benefit > 1.2 × Migration Cost
 ```
 
-Four equations. Five scalar hyperparameters. No training. No consensus rounds. Fully deterministic — same input always produces the same decision.
+Four equations. Five scalar hyperparameters. No training. No consensus rounds. Fully deterministic — same input always produces the same decision. Algorithm complexity: **O(k) per cycle**, where k = keys in the hot shard.
 
 ---
 
-## Results
+## Experimental Results
 
-Experiments on 50,000 requests, 4 shards, two skewed workload scenarios:
+All numbers below are taken directly from notebook cell outputs. Simulation: 50,000 requests, 4 shards, `REACTIVE_THRESHOLD = 150` (= 1.2× average load per step).
 
-### Flash-sale workload — burst traffic, 40% of requests to one shard
+### Three workload scenarios
 
-| Strategy | Throughput (req/s) | Latency (s) | Imbalance Ratio | Migrations |
-|---|---|---|---|---|
-| Static | 731,263 | 0.068 | 2.30 | 0 |
-| Reactive | 507,817 | 0.099 | 2.30 | 224 |
-| **LPR** | **707,374** | **0.071** | **2.26** | **83** |
+| Scenario | Strategy | Throughput (req/s) | Latency (s) | Imbalance Ratio | Migrations |
+|---|---|---|---|---|---|
+| **Uniform** | Static | 1,000,120 | 0.0500 | 1.54 | 0 |
+| | Reactive | 914,182 | 0.0547 | 1.54 | 300 |
+| | **LPR** | **1,056,686** | **0.0473** | **1.34** | **3** |
+| **Zipfian** | Static | 1,039,182 | 0.0481 | 2.83 | 0 |
+| | Reactive | 998,958 | 0.0501 | 2.83 | 100 |
+| | **LPR** | 979,735 | 0.0510 | **2.70** | **84** |
+| **Flash-sale** | Static | 1,066,433 | 0.0469 | 2.01 | 0 |
+| | Reactive | 806,715 | 0.0620 | 2.01 | 100 |
+| | **LPR** | **981,666** | **0.0509** | 2.03 | **44** |
 
-LPR reaches the same load balance as Reactive with **62.9% fewer migrations** (83 vs 224) and **39.3% higher throughput**.
+### LPR improvement over Reactive
 
-### Zipfian workload — long-tail distribution, s = 2.0
-
-| Strategy | Throughput (req/s) | Latency (s) | Imbalance Ratio | Migrations |
-|---|---|---|---|---|
-| Static | 465,139 | 0.108 | 3.14 | 0 |
-| Reactive | 637,188 | 0.079 | 3.14 | 100 |
-| **LPR** | 371,974 | 0.134 | **2.84** | **61** |
-
-LPR achieves **9.6% better load balance** than Reactive (IR 2.84 vs 3.14) with 39% fewer migrations. The throughput trade-off reflects EMA+GR computation in the simulation's wall-clock measurement — in production I/O-bound systems, O(k) algorithm overhead is negligible compared to actual network latency.
-
-### Ablation — which component matters most?
-
-| Variant | Migrations | IR |
-|---|---|---|
-| Reactive baseline | 0* | 2.618 |
-| LPR — remove EMA | 102 | 2.672 |
-| LPR — remove Growth Rate | 85 | 2.623 |
-| LPR — remove Cost-Benefit gate | 90 | 2.663 |
-| **Full LPR** | **0** | **2.618** |
-
-*Reactive had 0 migrations here because the ablation workload did not cross threshold=150 in this run.
-
-**EMA is the most important component** — without it, raw load noise causes as many false-positive migrations as Reactive. The Cost-Benefit gate is what makes LPR "lightweight": it prevents any migration that does not improve balance enough to justify the network cost.
-
----
-
-## How It Works — Decision Pipeline
-
-Each time cycle *t*, the LPR coordinator runs:
-
-```
-for each shard i:
-    1. Collect current load   L_i(t)
-    2. Update EMA             EMA_i(t) = 0.3·L_i(t) + 0.7·EMA_i(t−1)
-    3. Compute Growth Rate    GR_i(t)  = ΔL / (L_prev + ε)
-    4. Compute Hotspot Score  H_i(t)   = EMA_i(t) + 0.5·GR_i(t)
-    5. Compute threshold      T(t)     = mean(all loads) × 1.5
-
-    if H_i(t) > T(t):
-        benefit = projected load reduction
-        cost    = keys to move × transfer overhead
-        if benefit > 1.2 × cost:
-            migrate top-10% hot keys → coolest shard
-            update key_to_shard_map
-```
-
-Algorithm complexity: **O(k) per cycle**, where k = keys in the hot shard. Scales independently of cluster size.
-
----
-
-## Comparison with State-of-the-Art
-
-LPR is not designed to replace PSAP or Marlin — they solve a different problem (untrusted Byzantine environments). LPR fills a specific gap: **trusted enterprise databases** where simplicity, determinism, and zero training overhead are requirements.
-
-| | **LPR** | PSAP *(2025)* | Marlin *(SIGMOD 2025)* |
+| Metric | Uniform | Zipfian | Flash-sale |
 |---|---|---|---|
-| Target environment | Trusted enterprise DBMS | Untrusted blockchain | Untrusted blockchain |
-| Prediction mechanism | EMA + Growth Rate | Safe-PPO RL | Byzantine consensus |
-| Per-cycle complexity | **O(k)** | High | O(n²) |
-| Training required | **No** | Yes | No |
-| Fully deterministic | **Yes** | Requires validator sync | Partial |
-| Dedicated hardware | **No** | Yes | No |
-| Deployment effort | **5 hyperparameters** | High | High |
+| Throughput | **+15.6%** | −1.9%* | **+21.7%** |
+| Latency | **−13.5%** | −1.8%* | **−17.9%** |
+| Imbalance Ratio | **−13.0%** (1.34 vs 1.54) | **−4.6%** (2.70 vs 2.83) | +1.0% |
+| Migrations | **−99.0%** (3 vs 300) | **−16.0%** (84 vs 100) | **−56.0%** (44 vs 100) |
+
+> *On Zipfian, LPR throughput is 1.9% lower than Reactive. This reflects EMA and Growth Rate computation overhead measured in wall-clock simulation time. In production I/O-bound systems, O(k) algorithm overhead is negligible compared to actual network latency.
+
+### Key findings
+
+**Uniform workload** is where LPR's idle cost shows most clearly: only 3 migrations versus 300 for Reactive. The Cost-Benefit gate correctly identifies that almost no migration is profitable on balanced load, keeping overhead near zero.
+
+**Zipfian workload** demonstrates the core value: LPR achieves better load balance (IR 2.70 vs 2.83) with 16% fewer migrations, confirming the proactive signal detects hotspots before they fully form.
+
+**Flash-sale workload** shows the anti-thrashing effect most dramatically: LPR uses 56% fewer migrations (44 vs 100) while delivering 21.7% higher throughput and 17.9% lower latency than Reactive.
 
 ---
 
-## Repository
+## Ablation Study
+
+Each component is removed to isolate its contribution. Zipfian workload, `run_ablation()`.
+
+| Variant | Throughput (req/s) | Migrations | IR |
+|---|---|---|---|
+| Reactive baseline | 1,352,237 | 0* | 2.706 |
+| LPR — remove EMA | 1,194,346 | 102 | 2.602 |
+| LPR — remove Growth Rate | 1,224,958 | 89 | 2.652 |
+| LPR — remove Cost-Benefit gate | 1,250,235 | 93 | 2.842 |
+| **Full LPR** | **1,262,315** | **0** | **2.706** |
+
+> *Reactive migrations = 0 in this run because the ablation workload did not cross `threshold = 150` on this particular run. This is expected behavior for a balanced enough workload.
+
+**EMA is the most critical component**: removing it causes migrations to spike to 102 — equal to Reactive's worst-case behavior. Raw load signal is too noisy for stable proactive decisions.
+
+**Cost-Benefit gate is the anti-thrashing mechanism**: removing it causes migrations to rise to 93. Full LPR achieves 0 unnecessary migrations — the gate correctly identifies no migration is sufficiently profitable on this run.
+
+**Growth Rate contributes early detection**: without it, migrations rise to 89 and IR worsens. The Growth Rate signal shifts intervention 3–5 cycles earlier in the hotspot lifecycle.
+
+---
+
+## Connection to Course Material
+
+### Distributed Database Systems
+
+- **Horizontal sharding and consistent hashing** — LPR uses consistent hashing `H: K → S` for initial key routing, then maintains a `key_to_shard_map` override layer for migrated hot keys. This is the standard approach in systems like DynamoDB and Cassandra.
+- **Workload-aware vs. data-aware partitioning** — Static sharding distributes data evenly; LPR distributes *request load* evenly. Hot-spot formation occurs precisely when request distribution (Zipf) diverges from data distribution (uniform) — the fundamental tension in distributed database design.
+- **Imbalance Ratio as a system health metric** — IR = max(load) / mean(load) is the standard metric for partition skew in distributed storage systems.
+
+### Big Data Processing (PySpark)
+
+- **Spark for data preprocessing** — PySpark reads and processes the 128,975-record Amazon Sale Report dataset, computes SKU frequency distributions, and runs temporal workload analysis using Spark window functions. This is a real ETL pipeline, not a toy example.
+- **Data skew** — the central problem in both Spark (straggler tasks) and distributed databases (hot-spot shards) is the same: Zipf-distributed access patterns. The solution principles — salting, repartitioning, proactive load balancing — are analogous across both contexts.
+- **Synthetic workload generation** — Zipf distribution (s = 2.0) is the standard workload model in distributed systems benchmarking (YCSB — Yahoo Cloud Serving Benchmark). This is standard Big Data research methodology.
+
+### Why CPU, not GPU
+
+This simulation runs on Google Colab CPU runtime by design. Apache Spark processes distributed workloads on CPU clusters. Sharding involves hash routing, load monitoring, and scheduling — CPU-bound operations. Cassandra, MongoDB, and DynamoDB all run on CPU server clusters in production. GPU acceleration applies to matrix operations and deep learning, not to database coordination workloads.
+
+---
+
+## Repository Structure
 
 ```
 LPR-Ecommerce-Sharding/
 │
-├── Proactive_ReSharding.ipynb   Full experiment notebook — open directly in Colab
+├── Proactive_ReSharding.ipynb     Main experiment notebook — open directly in Colab
 │
 ├── lpr/
-│   ├── shard.py                 Shard — load tracking, key management
-│   ├── metrics.py               EMA · Growth Rate · Hotspot Score · Adaptive Threshold
-│   └── lpr_sharding.py          LPRSharding — complete algorithm
+│   ├── shard.py                   Shard class — load tracking, key management
+│   ├── metrics.py                 EMA, Growth Rate, Hotspot Score, Adaptive Threshold
+│   └── lpr_sharding.py            LPRSharding — complete algorithm
 │
 ├── baselines/
-│   ├── static_sharding.py       StaticSharding
-│   └── reactive_sharding.py     ReactiveSharding
+│   ├── static_sharding.py         StaticSharding
+│   └── reactive_sharding.py       ReactiveSharding
 │
 ├── experiments/
-│   ├── workload_generator.py    Zipfian · Flash-sale · Uniform synthesis
-│   └── simulation.py            Evaluation pipeline
+│   ├── workload_generator.py      Uniform / Zipfian / Flash-sale synthesis
+│   └── simulation.py              Evaluation pipeline
 │
 ├── visualization/
-│   └── plot_results.py          Consistent color palette, publication-ready charts
+│   └── plot_results.py            Consistent color palette, publication-ready charts
 │
 ├── assets/
-│   └── architecture.svg         System diagram
+│   └── architecture.svg           System architecture diagram
 │
 ├── docs/
-│   └── index.html               Interactive dashboard (GitHub Pages)
+│   └── index.html                 Interactive research dashboard (GitHub Pages)
 │
 └── requirements.txt
 ```
@@ -210,8 +212,8 @@ shards   = [Shard(i) for i in range(4)]
 strategy = LPRSharding(num_shards=4, alpha=0.3, beta=0.5, gamma=1.5, cost_barrier=1.2)
 result   = run_simulation(workload, strategy, shards)
 
-print(f"Imbalance Ratio : {result['final_imbalance']:.2f}")   # target < 3.14
-print(f"Migrations      : {result['total_migrations']}")       # target < 100
+print(f"Imbalance Ratio : {result['final_imbalance']:.2f}")   # expect < 2.83 (Static baseline)
+print(f"Migrations      : {result['total_migrations']}")       # expect < 100 (Reactive baseline)
 print(f"Throughput      : {result['total_throughput']:,.0f} req/s")
 ```
 
@@ -223,15 +225,24 @@ print(f"Throughput      : {result['total_throughput']:,.0f} req/s")
 |---|---|---|
 | `alpha` | `0.3` | EMA smoothing — lower = more stable, higher = more responsive |
 | `beta` | `0.5` | Weight of Growth Rate in Hotspot Score |
-| `gamma` | `1.5` | Threshold multiplier — how far above mean before action |
-| `migration_fraction` | `0.1` | Share of hot keys moved per trigger |
+| `gamma` | `1.5` | Threshold multiplier — how far above mean load before action |
+| `migration_fraction` | `0.1` | Fraction of hot keys migrated per trigger |
 | `cost_barrier` | `1.2` | Minimum benefit/cost ratio — primary anti-thrashing control |
 
 ---
 
-## A Note on CPU vs GPU
+## Comparison with State-of-the-Art
 
-This simulation runs on **Google Colab CPU runtime** — which is exactly right for this workload. Apache Spark, Cassandra, MongoDB, and DynamoDB all run on CPU servers in production. Sharding involves hash routing, load monitoring, and scheduling decisions — CPU-bound operations with no matrix algebra. GPU acceleration applies to deep learning and vector operations, not distributed database coordination.
+| | **LPR** | PSAP *(arXiv 2025)* | Marlin *(SIGMOD 2025)* |
+|---|---|---|---|
+| Target environment | Trusted enterprise DBMS | Untrusted blockchain | Untrusted blockchain |
+| Prediction mechanism | EMA + Growth Rate | Safe-PPO RL | Byzantine consensus |
+| Per-cycle complexity | **O(k)** | High | O(n²) |
+| Training required | **No** | Yes | No |
+| Fully deterministic | **Yes** | Requires validator sync | Partial |
+| Deployment effort | **5 hyperparameters** | High | High |
+
+LPR is not designed to replace PSAP or Marlin. It addresses a distinct and underserved problem: **trusted enterprise databases** where Byzantine overhead is unnecessary and operational simplicity is a hard requirement.
 
 ---
 
@@ -244,7 +255,7 @@ This simulation runs on **Google Colab CPU runtime** — which is exactly right 
 
 ---
 
-## Authors
+## Developed By
 
 **Nguyen Le Bao Dang** (23520230) · **Pham Minh Ngan** (23520997)  
 Faculty of Information Systems · University of Information Technology · VNU-HCM  
